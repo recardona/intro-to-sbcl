@@ -31,6 +31,30 @@
     (format t "~{~a:~10t~a~%~}~%" cd)))
 
 
+;; Save the database to a file given by the filename.
+;; @param filename the name of the output database file 
+(defun save-db (filename)
+  (with-open-file (out filename
+                       :direction :output
+                       :if-exists :supersede)
+    (with-standard-io-syntax
+      (print *db* out)
+     )
+   )
+)
+
+
+;; Loads the database from the file given by the filename.
+;; @param filename the name of the input database file
+(defun load-db (filename)
+  (with-open-file (in filename)
+    (with-standard-io-syntax
+      (setf *db* (read in))
+    )
+  )
+)
+
+
 ;; Auxiliary function to read the input from a prompt which
 ;; is presented to the user.
 ;; @param prompt a prompt to present to the user
@@ -41,14 +65,29 @@
   (read-line *query-io*)
 )
 
+
 ;; Makes a new CD record from data it gets by prompting
 ;; for each value in turn.
 (defun prompt-for-cd ()
   (make-cd
    (prompt-read "Title")
    (prompt-read "Artist")
-   (prompt-read "Rating")
-   (prompt-read "Ripped [y/n]")
+   ;; either, get me the rating read from the prompt or assign it 0 if
+   ;; none can be correctly parsed.
+   (or (parse-integer (prompt-read "Rating"):junk-allowed t) 0) 
+   (y-or-n-p "Ripped [y/n]") ;;yes or no prompt
    )
 )
+
+
+;; Add a bunch of CDs until the user gets tired of
+;; inputing CDs.
+(defun add-cds()
+  (loop (add-record (prompt-for-cd))
+     (if (not (y-or-n-p "Another? [y/n]: "))
+     (return)
+     )
+  )
+)
    
+
