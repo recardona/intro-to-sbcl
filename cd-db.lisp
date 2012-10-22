@@ -99,6 +99,8 @@
 
 
 
+;; A general selector-function generator, to be used in conjunction
+;; with the "select" function.  
 (defun where (&key title artist rating (ripped nil ripped-p))
   #'(lambda(cd)
       (and
