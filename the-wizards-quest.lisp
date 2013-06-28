@@ -44,7 +44,8 @@
   `(There is a ,(caddr edge) going ,(cadr edge) from here.))
 
 ;; Find the relevant edges, convert the edges to descriptions, and
-;; join the descriptions. 
+;; join the descriptions. Apply takes each list item, and treats it
+;; as a parameter to the function it seeks to apply.
 (defun describe-paths (location edges)
   (apply #'append (mapcar #'describe-path (cdr (assoc location edges)))))
 
