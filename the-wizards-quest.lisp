@@ -40,6 +40,9 @@
 				   (chain garden)
 				   (frog garden)))
 
+;; Player's starting location.
+(defparameter *location* 'living-room)
+
 
 
 ;; Using the assoc function, which searches an a-list in order,
@@ -82,4 +85,8 @@
 	     `(you see a ,obj on the floor.)))
     (apply #'append (mapcar #'describe-obj (objects-at loc objs obj-locs)))))
 
-
+;; The game's 'look' command.
+(defun look ()
+  (append (describe-location *location* *nodes*)
+	  (describe-paths *location* *edges*)
+	  (describe-objects *location* *objects* *object-locations*)))
