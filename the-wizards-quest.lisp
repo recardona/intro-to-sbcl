@@ -31,10 +31,21 @@
 			(attic  (living-room downstairs ladder))))
 
 
+;; List of objects in the game world.
+(defparameter *objects* '(whiskey bucket frog chain))
+
+;; Alist of object locations.
+(defparameter *object-locations* '((whiskey living-room)
+				   (bucket living-room)
+				   (chain garden)
+				   (frog garden)))
+
+
+
 ;; Using the assoc function, which searches an a-list in order,
-;; find "location" within "nodes," and get the head element of 
-;; its tail.  This should return the description of the
-;; specified location in the a-list, as a single list.
+;; and returns the key-datum pairs, find "location" within "nodes," 
+;; and get the head element of its tail.  This should return the 
+;; description of the specified location in the a-list, as a single list.
 (defun describe-location (location nodes)
   (cadr (assoc location nodes)))
 
@@ -48,4 +59,19 @@
 ;; as a parameter to the function it seeks to apply.
 (defun describe-paths (location edges)
   (apply #'append (mapcar #'describe-path (cdr (assoc location edges)))))
+
+
+;; Find the objects (objs) at the parameter (loc) location.
+(defun objects-at (loc objs obj-locs)
+  (labels (;; Predicate function the answers:
+	   ;; Is the object obj at location loc?
+	   (at-loc-p (obj)
+	     ;; The cadr of the obj-locs list contains location information
+	     (eq (cadr (assoc obj obj-locs)) loc)))
+    ;; Removes from the parameter list objs elements which fail
+    ;; the predicate test #'at-loc-p
+    (remove-if-not #'at-loc-p objs)))
+
+
+
 
