@@ -60,11 +60,14 @@
 (defun describe-paths (location edges)
   (apply #'append (mapcar #'describe-path (cdr (assoc location edges)))))
 
-
 ;; Find the objects (objs) at the parameter (loc) location.
 (defun objects-at (loc objs obj-locs)
   (labels (;; Predicate function the answers:
 	   ;; Is the object obj at location loc?
+	   ;; From Wikipedia: (In logic) a predicate is (informally) a 
+	   ;; statement that may be true or false depending on the values
+	   ;; of its variables. It’s a Common Lisp convention to append a
+	   ;; p to the end of predicate function names
 	   (at-loc-p (obj)
 	     ;; The cadr of the obj-locs list contains location information
 	     (eq (cadr (assoc obj obj-locs)) loc)))
@@ -72,6 +75,11 @@
     ;; the predicate test #'at-loc-p
     (remove-if-not #'at-loc-p objs)))
 
-
+;; Describe the objects that can be found at the location (loc)
+(defun describe-objects (loc objs obj-locs)
+  (labels (
+	   (describe-obj (obj)
+	     `(you see a ,obj on the floor.)))
+    (apply #'append (mapcar #'describe-obj (objects-at loc objs obj-locs)))))
 
 
