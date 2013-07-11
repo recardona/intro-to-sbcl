@@ -85,8 +85,44 @@
 	     `(you see a ,obj on the floor.)))
     (apply #'append (mapcar #'describe-obj (objects-at loc objs obj-locs)))))
 
+
+;; ========================== Game Commands ==========================
+;; Remember that because these functions depend on a global variable, they are
+;; not in the "functional style," which denotes functions that are completely
+;; determined by the inputs to that function, and which always give the same
+;; output with respect to the same inputs. Functional syle functions are
+;; functions in the mathematical sense.
+
+
 ;; The game's 'look' command.
+;; Players use this function to describe the world around them.
 (defun look ()
   (append (describe-location *location* *nodes*)
 	  (describe-paths *location* *edges*)
 	  (describe-objects *location* *objects* *object-locations*)))
+
+;; The game's 'walk' command.
+;; Players use this function to move around in the world.
+;; Players can only walk to locations which are adjacent to them,
+;; which are accessible toward specific directions.
+(defun walk (direction)
+  (let (
+	;; Try to define the local variable 'next', by searching for
+	;; a match for the parameter 'direction' in the directions 
+	;; within the *edges* variable.
+	(next (find direction 
+		    (cdr (assoc *location* *edges*)) ;; this cdr yields the edge datums available from the current location
+		     :key #'cadr)) ;; the cadr of the above list yields the direction through which the edge is established
+
+	;; In essence, you're trying to see if you can find the direction you intend to walk through in the edges available
+	;; from your current location.  If the above lookup fails, 'next' will be nil.  If it succeeds, 'next' will be the
+	;; complete edge datum of the *edges* a-list (found by cdr, above).
+	)
+
+    (if next
+	(progn
+	  (setf *location* (car next)) ;; the car of next is the new location you're walking toward
+	  (look)) ;; auto-look at the next location once you've walked to it
+
+	'(You cannot go that way.) ;; if next is nil, just return the message saying you can't walk in the chosen direction
+    )))
