@@ -111,18 +111,57 @@
 	;; a match for the parameter 'direction' in the directions 
 	;; within the *edges* variable.
 	(next (find direction 
-		    (cdr (assoc *location* *edges*)) ;; this cdr yields the edge datums available from the current location
-		     :key #'cadr)) ;; the cadr of the above list yields the direction through which the edge is established
+		   
+		    ;; this cdr yields the edge datums available from
+		    ;; the current location
+		    (cdr (assoc *location* *edges*)) 
+		     :key #'cadr))
+	            ;; the cadr of the above list yields the direction
+	            ;; through which the edge is established
 
-	;; In essence, you're trying to see if you can find the direction you intend to walk through in the edges available
-	;; from your current location.  If the above lookup fails, 'next' will be nil.  If it succeeds, 'next' will be the
+	;; In essence, you're trying to see if you can find the
+	;; direction you intend to walk through in the edges available
+	;; from your current location.  If the above lookup fails,
+	;; 'next' will be nil.  If it succeeds, 'next' will be the
 	;; complete edge datum of the *edges* a-list (found by cdr, above).
 	)
 
     (if next
 	(progn
-	  (setf *location* (car next)) ;; the car of next is the new location you're walking toward
-	  (look)) ;; auto-look at the next location once you've walked to it
+	  ;; the car of next is the new location you're walking toward
+	  (setf *location* (car next)) 
+	  (look))
+	  ;; auto-look at the next location once you've walked to it
 
-	'(You cannot go that way.) ;; if next is nil, just return the message saying you can't walk in the chosen direction
+	'(You cannot go that way.) 
+	;; if next is nil, just return the message saying you 
+	;; can't walk in the chosen direction
     )))
+
+;; The game's 'pickup' command.
+;; Players use this function to pick up items located where they are.
+(defun pickup (object)
+  (cond
+	 ;; Remember, in 'cond', the first argument is what is
+	 ;; evaluated for truthiness. Subsequent arguments are
+	 ;; just executed as normal (the last thing evaluated
+	 ;; is what is returned).
+	((member object (objects-at *location* *objects* *object-locations*))
+		  ;; check if the object you want to pick up is at your location
+
+		 ;; if so, update the *object-locations* with the object now located
+		 ;; at the symbol 'body (a placeholder to denote it's on your body)
+		 ;; note that this merely occludes the previous location of the object
+		 ;; by putting it at the front of the list.  This will not cause
+		 ;; issues, because of the way we're iterating across the a-lists;
+		 ;; assoc iterates in order, and only returns the first instance of
+		 ;; the tokens being searched.  Using push/assoc allows us to pretend
+		 ;; a-list values actually change, while providing a history of changes
+		 ;; for free.
+		 (push (list object 'body) *object-locations*)
+		 `(You are now carrying the ,object))
+
+	 ;; If the above condition falls through, we need to be sure to respond accordingly.
+	 (t '(You cannot get that.))))
+
+
