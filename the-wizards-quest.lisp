@@ -164,4 +164,13 @@
 	 ;; If the above condition falls through, we need to be sure to respond accordingly.
 	 (t '(You cannot get that.))))
 
-
+;; The game's 'inventory' command.
+;; Players use this function to evaluate what is in their inventory.  
+;; The inventory is defined to be all the objects located on the player's body
+;; (denoted by the 'body symbol).
+(defun inventory ()
+  (let ((items (objects-at 'body *objects* *object-locations*)))
+    (if items
+	(cons 'items- items)
+	'(Your inventory is empty.)))) ;; Some flavor for when you have nothing.
+  
