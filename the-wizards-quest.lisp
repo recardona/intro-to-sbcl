@@ -177,7 +177,7 @@
 ;; ========================== Game REPL ==========================
 (defun game-repl ()
   (loop
-     (print (eval (read)))
+     (print (eval (game-read)))
      (finish-output))) ;; finish-output is an SBCL idiosyncracy
  ;; it guarantees that the output will finish prior to continuing
 
