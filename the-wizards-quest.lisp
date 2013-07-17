@@ -174,3 +174,22 @@
 	(cons 'items- items)
 	'(Your inventory is empty.)))) ;; Some flavor for when you have nothing.
   
+;; ========================== Game REPL ==========================
+(defun game-repl ()
+  (loop
+     (print (eval (read)))
+     (finish-output))) ;; finish-output is an SBCL idiosyncracy
+ ;; it guarantees that the output will finish prior to continuing
+
+(defun game-read () 
+  (let ( (cmd (read-from-string (concatenate 'string "(" (read-line) ")"))) )
+    (flet ( (quote-it (x)
+	      (list 'quote x)) ) ;;prepends a quote (') to the parameter passed in
+      ;; the car of the cmd is the intended game command name
+      (cons (car cmd)
+	    (mapcar #'quote-it (cdr cmd))))))
+      ;; the cdr of the cmd are all the arguments of the intended game command,
+      ;; all of which require a quote prepended to them; mapcar that list with
+      ;; the function quote-it to do so, and then cons:
+      ;;   the intended game command, AND
+      ;;   the intended (and quoted) game command arguments
