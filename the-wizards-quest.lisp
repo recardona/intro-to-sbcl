@@ -1,4 +1,3 @@
-;;
 ;; the-wizards-quest.lisp
 ;; @author: recardona 
 ;;
@@ -65,7 +64,7 @@
 
 ;; Find the objects (objs) at the parameter (loc) location.
 (defun objects-at (loc objs obj-locs)
-  (labels (;; Predicate function the answers:
+  (labels (;; Predicate function that answers:
 	   ;; Is the object obj at location loc?
 	   ;; From Wikipedia: (In logic) a predicate is (informally) a 
 	   ;; statement that may be true or false depending on the values
@@ -151,17 +150,19 @@
 
 		 ;; if so, update the *object-locations* with the object now located
 		 ;; at the symbol 'body (a placeholder to denote it's on your body)
-		 ;; note that this merely occludes the previous location of the object
-		 ;; by putting it at the front of the list.  This will not cause
+		 ;; note that this merely occludes the previous location of the
+	         ;; object by putting it at the front of the list.  
+	         ;; This will not cause
 		 ;; issues, because of the way we're iterating across the a-lists;
 		 ;; assoc iterates in order, and only returns the first instance of
-		 ;; the tokens being searched.  Using push/assoc allows us to pretend
-		 ;; a-list values actually change, while providing a history of changes
-		 ;; for free.
+		 ;; the tokens being searched.  Using push/assoc allows us to
+	         ;; pretend a-list values actually change, while providing a
+	         ;; history of changes for free.
 		 (push (list object 'body) *object-locations*)
 		 `(You are now carrying the ,object))
 
-	 ;; If the above condition falls through, we need to be sure to respond accordingly.
+	 ;; If the above condition falls through, we need to be sure to
+	 ;; respond accordingly.
 	 (t '(You cannot get that.))))
 
 ;; The game's 'inventory' command.
@@ -173,16 +174,29 @@
     (if items
 	(cons 'items- items)
 	'(Your inventory is empty.)))) ;; Some flavor for when you have nothing.
+
+;; The game's 'do nothing' command.
+;; This function is called when the player enters a newline character without
+;; entering a command. For now it prints the closed world assumption of the world.
+(defun donothing ()
+  '(You do nothing and nothing happens.))
   
 ;; ========================== Game REPL ==========================
 (defun game-repl ()
   (loop
      (print (eval (game-read)))
-     (finish-output))) ;; finish-output is an SBCL idiosyncracy
+     (finish-output)))
+ ;; finish-output is an SBCL idiosyncracy
  ;; it guarantees that the output will finish prior to continuing
 
+
+;; The game's read auxiliary function, which allows naturalistic input on
+;; behalf of the player.
 (defun game-read () 
-  (let ( (cmd (read-from-string (concatenate 'string "(" (read-line) ")"))) )
+  (let ( (cmd (read-from-string (concatenate 'string "("
+					     (let ((raw (read-line) ))
+						   (if (equal "" raw) "donothing" raw))
+					     ")"))))
     (flet ( (quote-it (x)
 	      (list 'quote x)) ) ;;prepends a quote (') to the parameter passed in
       ;; the car of the cmd is the intended game command name
@@ -193,3 +207,29 @@
       ;; the function quote-it to do so, and then cons:
       ;;   the intended game command, AND
       ;;   the intended (and quoted) game command arguments
+
+
+(defparameter *allowed-commands* '(look walk pickup inventory donothing))
+
+;; The game's eval auxiliary function, which allows only the commands defined
+;; in *allowed-commands* (hacker-B-gone)
+(defun game-eval (sexp)
+  (if (member (car sexp) *allowed-commands*)
+      (eval sexp)
+      '(I do not know that command.)))
+
+
+(defun tweak-text (lst caps lit)
+  (when lst
+    (let ((item (car lst))
+	  (rest (cdr lst)))
+      (cond ((eq item #\space) (cons item (tweak-text rest caps lit)))
+	    ((member item '(#\! #\? #\.)) (cons item (tweak-text rest t lit)))
+	    ((eq item #\") (tweak-text rest caps (not lit)))
+	    (lit (cons item (tweak-text rest nil lit)))
+	    ((or caps lit) (cons (char-upcase item) (tweak-text rest nil lit)))
+	    (t (cons (char-downcase item) (tweak-text rest nil nil)))))))
+
+ 
+
+
