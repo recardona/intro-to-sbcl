@@ -237,7 +237,8 @@
 	    ((or caps lit) (cons (char-upcase item) (tweak-text rest nil lit)))
 	    (t (cons (char-downcase item) (tweak-text rest nil nil)))))))
 
-
+;; The game's print auxiliary function, which makes the text print in
+;; a way more natural to text-based adventures.
 (defun game-print (lst)
   (princ
    (coerce (tweak-text (coerce (string-trim "() "
