@@ -179,12 +179,12 @@
 ;; This function is called when the player enters a newline character without
 ;; entering a command. For now it prints the closed world assumption of the world.
 (defun donothing ()
-  '(You do nothing and nothing happens.))
+  '(You do "nothing," and nothing happens.))
   
 ;; ========================== Game REPL ==========================
 (defun game-repl ()
   (loop
-     (print (eval (game-read)))
+     (game-print (game-eval (game-read)))
      (finish-output)))
  ;; finish-output is an SBCL idiosyncracy
  ;; it guarantees that the output will finish prior to continuing
@@ -219,16 +219,36 @@
       '(I do not know that command.)))
 
 
+;; Auxiliary function to handle printing to the console in a more...dignified manner.
+;; lst denotes the list to continue tweaking,
+;; caps is a flag denoting the need for capitalization, and
+;; lit is a flag denoting the need for literal quoting (keep caps as indicated in the text)
 (defun tweak-text (lst caps lit)
   (when lst
     (let ((item (car lst))
 	  (rest (cdr lst)))
-      (cond ((eq item #\space) (cons item (tweak-text rest caps lit)))
-	    ((member item '(#\! #\? #\.)) (cons item (tweak-text rest t lit)))
+      (cond ((eq item #\space) (cons item (tweak-text rest caps lit))) 
+	    ;; check if the character is a space
+	    ((member item '(#\! #\? #\.)) (cons item (tweak-text rest t lit))) 
+	    ;; check if the character denotes the end of the sentence (next char should be caps)
 	    ((eq item #\") (tweak-text rest caps (not lit)))
+	    ;; check if there are quotes (which means that we should print it literally)
 	    (lit (cons item (tweak-text rest nil lit)))
 	    ((or caps lit) (cons (char-upcase item) (tweak-text rest nil lit)))
 	    (t (cons (char-downcase item) (tweak-text rest nil nil)))))))
+
+
+(defun game-print (lst)
+  (princ
+   (coerce (tweak-text (coerce (string-trim "() "
+					     (prin1-to-string lst))
+			       'list) ;;coerece the string to characters
+		       t
+		       nil) ;;tweak the text!
+	   'string)) ;;coerce the characters back into a list
+  (fresh-line))
+
+
 
  
 
